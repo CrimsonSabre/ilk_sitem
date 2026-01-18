@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>SAHTE KARAR OYUNU</title>
+<style>
+body{
+  margin:0;
+  background:black;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+}
+
+.hidden{display:none;}
+
+button{
+  padding:10px 22px;
+  margin:10px;
+  background:#8b0000;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+button:hover{background:crimson;}
+
+#imageBox{
+  width:90%;
+  max-width:1000px;
+  height:450px;
+  margin:20px auto;
+  border:2px solid #333;
+  background:black;
+}
+
+#imageBox img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
+#text{
+  width:80%;
+  margin:auto;
+  min-height:120px;
+  font-size:17px;
+  white-space:pre-line;
+}
+</style>
+</head>
+
+<body>
+
+<!-- MENU -->
+<div id="menu">
+  <h1>SAHTE KARAR OYUNU</h1>
+  <button onclick="startGame()">▶ Başlat</button>
+  <button onclick="openAchievements()">🏆 Başarılar</button>
+  <button onclick="exitGame()">❌ Çıkış</button>
+</div>
+
+<!-- BAŞARILAR -->
+<div id="achievements" class="hidden">
+  <h2>Başarılar</h2>
+  <div id="achList"></div>
+  <button onclick="backToMenu()">Geri</button>
+</div>
+
+<!-- GAME -->
+<div id="game" class="hidden">
+  <div id="imageBox">
+    <img id="sceneImage" src="images/room.jpg">
+  </div>
+  <div id="text"></div>
+  <div id="buttons"></div>
+</div>
+
+<script>
+const menu = document.getElementById("menu");
+const game = document.getElementById("game");
+const achievementsDiv = document.getElementById("achievements");
+const textBox = document.getElementById("text");
+const buttons = document.getElementById("buttons");
+const img = document.getElementById("sceneImage");
+
+let achievements = {
+  escape:false,
+  death:false
+};
+
+function clearButtons(){
+  buttons.innerHTML="";
+}
+
+function addButton(text,action){
+  const b=document.createElement("button");
+  b.innerText=text;
+  b.onclick=action;
+  buttons.appendChild(b);
+}
+
+function typeText(text,callback){
+  textBox.innerHTML="";
+  let i=0;
+  const t=setInterval(()=>{
+    textBox.innerHTML+=text[i];
+    i++;
+    if(i>=text.length){
+      clearInterval(t);
+      if(callback)callback();
+    }
+  },20);
+}
+
+/* MENU */
+function startGame(){
+  menu.classList.add("hidden");
+  game.classList.remove("hidden");
+  windowScene();
+}
+
+function exitGame(){
+  window.location.href="../../index.html";
+}
+
+function openAchievements(){
+  menu.classList.add("hidden");
+  achievementsDiv.classList.remove("hidden");
+
+  let list="";
+  list += achievements.escape ? "✅ Camdan Kaçış" : "C??kmak ❓<br>";
+  list += achievements.death ? "✅ Ölümden Kaçış" : "Ölüm ❓<br>";
+  document.getElementById("achList").innerHTML=list;
+}
+
+function backToMenu(){
+  achievementsDiv.classList.add("hidden");
+  menu.classList.remove("hidden");
+}
+
+/* BÖLÜM 1 */
+function windowScene(){
+  img.src="images/window.jpg";
+  clearButtons();
+  typeText(
+    "Camdan sessizce süzülüyorsun.\nAyakların soğuk zemine değiyor.\n\nHâlâ binanın içindesin.",
+    ()=>addButton("Sessizce ilerle",chanceScene)
+  );
+}
+
+function chanceScene(){
+  clearButtons();
+  if(Math.random()<0.1){
+    typeText(
+      "Bir gölge aniden üstüne çöküyor.\n'Ses yaptığını sandın mı?' ☠️",
+      ()=>addButton("Menüye Dön",()=>location.reload())
+    );
+  }else{
+    listen1();
+  }
+}
+
+function listen1(){
+  img.src="images/corridor.jpg";
+  typeText(
+    "Adam 1: 'Bir şeyler ters… içime sinmiyor.'",
+    ()=>addButton("Dinle",listen2)
+  );
+}
+
+function listen2(){
+  clearButtons();
+  typeText(
+    "Adam 2: 'Onunla mı ilgili diyorsun?\nO dosya kapandı sanıyordum.'",
+    ()=>addButton("Dinle",listen3)
+  );
+}
+
+function listen3(){
+  clearButtons();
+  typeText(
+    "Adam 1: 'Bazı hatalar kapatılmaz.\nÖzellikle onun yaptığı…'",
+    ()=>addButton("Bölüm 2'ye geç",startChapter2)
+  );
+}
+
+/* BÖLÜM 2 */
+function startChapter2(){
+  achievements.escape = true;  // Bölüm 1 başarı
+  img.src="images/exit.jpg";
+  clearButtons();
+  typeText(
+    "Koridorun sonunda iki kapı var.\nBirisi kilitli, diğeri açık.\n\nSeçim yapmalısın.",
+    ()=>{
+      addButton("Kilitli kapı",lockedDoor);
+      addButton("Açık kapı",openDoor);
+    }
+  );
+}
+
+function lockedDoor(){
+  clearButtons();
+  typeText(
+    "Kapı kilitli ama birden arkasından adım sesleri duyuyorsun.\n\nŞimdi hızlı karar ver!",
+    ()=>{
+      addButton("Pencereye yönel",windowEscape);
+      addButton("Kapının altından sürün",crawl);
+    }
+  );
+}
+
+function openDoor(){
+  clearButtons();
+  typeText(
+    "Kapı açık, ama içerisi karanlık.\nİçeriden bir nefes sesi geliyor.",
+    ()=>{
+      addButton("İçeri gir",enterRoom);
+      addButton("Geri dön",lockedDoor);
+    }
+  );
+}
+
+function windowEscape(){
+  clearButtons();
+  typeText(
+    "Pencereye yöneliyorsun.\nBu sefer kaçmak daha zor…",
+    ()=>{
+      if(Math.random() < 0.3){
+        death();
+      } else {
+        victory();
+      }
+    }
+  );
+}
+
+function crawl(){
+  clearButtons();
+  typeText(
+    "Sürünerek ilerliyorsun.\nAdımların sessiz, ama kalbin hızlı.",
+    ()=>{
+      if(Math.random() < 0.2){
+        death();
+      } else {
+        victory();
+      }
+    }
+  );
+}
+
+function enterRoom(){
+  clearButtons();
+  typeText(
+    "Odaya giriyorsun.\nİki adamın konuşması daha net duyuluyor…",
+    ()=>{
+      if(Math.random() < 0.4){
+        death();
+      } else {
+        victory();
+      }
+    }
+  );
+}
+
+function death(){
+  clearButtons();
+  typeText(
+    "Adamlar seni yakaladı.\n\n(Ölüm)\n\nBölüm sonu.",
+    ()=>{
+      achievements.death = false;
+      addButton("Menüye Dön",()=>location.reload());
+    }
+  );
+}
+
+function victory(){
+  clearButtons();
+  typeText(
+    "Başardın! Kaçmayı başardın.\n\n(Ölümden Kaçış)",
+    ()=>{
+      achievements.death = true;
+      addButton("Menüye Dön",()=>location.reload());
+    }
+  );
+}
+</script>
+
+</body>
+</html>
