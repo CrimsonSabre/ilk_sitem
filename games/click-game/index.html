@@ -1,22 +1,168 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Crimson Click</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7 Saniye Aim Challenge</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #0f0c29;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #ui-layer {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .stats-box {
+            display: inline-block;
+            margin: 0 15px;
+            font-size: 20px;
+        }
+
+        #game-container {
+            position: relative;
+            width: 90vw;
+            max-width: 800px;
+            height: 60vh;
+            background: rgba(255, 255, 255, 0.05);
+            border: 3px solid #30cfd0;
+            border-radius: 20px;
+            cursor: crosshair;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .target {
+            position: absolute;
+            width: 45px;
+            height: 45px;
+            background: radial-gradient(circle, #ff0055, #a20036);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px #ff0055;
+            cursor: pointer;
+        }
+
+        #start-btn {
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #30cfd0;
+            border: none;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.1);
+            background: #330867;
+        }
+
+        #timer { color: #ff4b2b; font-weight: bold; font-size: 28px; }
+        #high-score { color: #fbc2eb; }
+    </style>
 </head>
 <body>
-<button id="startBtn">Başlat</button>
-<button id="exitBtn">Çıkış</button>
 
-<p>En Yüksek Skor: <span id="highScore">0</span></p>
+    <div id="ui-layer">
+        <div class="stats-box">Süre: <span id="timer">7</span>s</div>
+        <div class="stats-box">Puan: <span id="score">0</span></div>
+        <div class="stats-box">En Yüksek: <span id="high-score">0</span></div>
+    </div>
+    
+    <div id="game-container">
+        <button id="start-btn" onclick="startGame()">BAŞLA</button>
+    </div>
 
-  <h1>Crimson Click</h1>
-  <p>Skor: <span id="score">0</span></p>
-  <p>Süre: <span id="time">30</span></p>
+    <script>
+        const container = document.getElementById('game-container');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const highScoreElement = document.getElementById('high-score');
+        const startBtn = document.getElementById('start-btn');
 
-  <div id="box"></div>
+        let score = 0;
+        let timeLeft = 7;
+        let gameActive = false;
+        let timerInterval;
 
-  <script src="script.js"></script>
+        // Kayıtlı yüksek skoru getir
+        let highScore = localStorage.getItem('aimHighScore') || 0;
+        highScoreElement.textContent = highScore;
+
+        function startGame() {
+            score = 0;
+            timeLeft = 7;
+            gameActive = true;
+            scoreElement.textContent = score;
+            timerElement.textContent = timeLeft;
+            startBtn.style.display = 'none';
+            container.innerHTML = ''; 
+
+            createTarget();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function createTarget() {
+            if (!gameActive) return;
+            container.innerHTML = '';
+            
+            const target = document.createElement('div');
+            target.classList.add('target');
+
+            const x = Math.random() * (container.clientWidth - 60) + 30;
+            const y = Math.random() * (container.clientHeight - 60) + 30;
+
+            target.style.left = `${x}px`;
+            target.style.top = `${y}px`;
+
+            target.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                score++;
+                scoreElement.textContent = score;
+                createTarget();
+            });
+
+            container.appendChild(target);
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            container.innerHTML = '';
+            startBtn.style.display = 'block';
+            startBtn.textContent = 'TEKRAR DENE';
+
+            // Yüksek skor kontrolü
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('aimHighScore', highScore);
+                highScoreElement.textContent = highScore;
+                alert("YENİ REKOR! Skorun: " + score);
+            } else {
+                alert("Oyun bitti! Skorun: " + score);
+            }
+        }
+    </script>
 </body>
 </html>
